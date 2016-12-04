@@ -13,22 +13,22 @@ As well as being lightweight, all functions are designed with scaleability in mi
 ## Required App Settings
 
 | Name | Description | Suggest Value (If Any) |
-|--------|--------|
+|--------|:--------:|--------:|
 | AzureWebJobsDashboard | ? | ? |
 | AzureWebJobsStorage | ? | ? |
 | FUNCTIONS_EXTENSION_VERSION | | ~1 |
 | WEBSITE_CONTENTAZUREFILECONNECTIONSTRING | ? | ? |
 | WEBSITE_CONTENTSHARE | ? | ? |
 | WEBSITE_NODE_DEFAULT_VERSION | | 6.5.0 |
-| SendGridAPIKey | Your SendGrid API Key | N/A |
+| SendGridAPIKey | Your SendGrid API Key | NA |
 | DateTimeFormat | Date / Time format used for serialisation of DateTimes | yyyy-MM-ddThh:mm:ssZ |
-| PublicRSAKey | Your apps public RSA key as a hex encoded string | N/A |
-| PrivateRSAKey | Your apps private RSA key as a hex encoded string | N/A |
-| StorageRootURL | The root url of your apps storage | N/A |
+| PublicRSAKey | Your apps public RSA key as a hex encoded string | NA |
+| PrivateRSAKey | Your apps private RSA key as a hex encoded string | NA |
+| StorageRootURL | The root url of your apps storage | NA |
 | CreateAccountEmailSubject | The subject used for account creation emails | Activate Your Account |
-| AppName | The name of your app | N/A |
+| AppName | The name of your app | NA |
 | LoginRequestEmailSubject | The subject used for login request emails | Login Request |
-| FromEmailAddress | The email address used to send emails from using SendGrid | N/A |
+| FromEmailAddress | The email address used to send emails from using SendGrid | NA |
 
 ## Functions Overview
 
