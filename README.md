@@ -14,11 +14,11 @@ As well as being lightweight, all functions are designed with scaleability in mi
 
 | Name | Description | Suggest Value (If Any) |
 |--------|--------|
-| AzureWebJobsDashboard | | |
-| AzureWebJobsStorage | | |
+| AzureWebJobsDashboard | ? | ? |
+| AzureWebJobsStorage | ? | ? |
 | FUNCTIONS_EXTENSION_VERSION | | ~1 |
-| WEBSITE_CONTENTAZUREFILECONNECTIONSTRING | | |
-| WEBSITE_CONTENTSHARE | | |
+| WEBSITE_CONTENTAZUREFILECONNECTIONSTRING | ? | ? |
+| WEBSITE_CONTENTSHARE | ? | ? |
 | WEBSITE_NODE_DEFAULT_VERSION | | 6.5.0 |
 | SendGridAPIKey | Your SendGrid API Key | N/A |
 | DateTimeFormat | Date / Time format used for serialisation of DateTimes | yyyy-MM-ddThh:mm:ssZ |
