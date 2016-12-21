@@ -1,0 +1,36 @@
+﻿{
+  "Categories": [
+    {
+      "Name": "Profile",
+      "SubCategories": [
+        {
+          "Name": "Biography",
+          "Fields": [
+            {
+              "Name": "FullName",
+              "Value": "Nicholas Phillip Pateman"
+            },
+            {
+              "Name": "DateOfBirth",
+              "Value": "03-14-1982"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Settings",
+      "SubCategories": [
+        {
+          "Name": "Security",
+          "Fields": [
+            {
+              "Name": "Searchable",
+              "Value": "true"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

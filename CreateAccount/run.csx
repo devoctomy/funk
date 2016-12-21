@@ -20,21 +20,20 @@ public static void Run(string myQueueItem, out string outputQueueItem, TraceWrit
 
     JObject pJOtQueueData = JObject.Parse(myQueueItem);
     String pStrEmail = pJOtQueueData["Email"].Value<String>();
-    String pStrUserName = pJOtQueueData["UserName"].Value<String>();
- 
-    Storage pStoMembership = new Storage(EnvironmentHelpers.GetEnvironmentVariable("StorageRootURL"), "AzureWebJobsStorage");
+
+    Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "CreateAccount");
     User pUsrUser = pStoMembership.GetUser(pStrEmail);
     if(pUsrUser == null)
     {
-        pUsrUser = new User(pStrEmail, pStrUserName, 6);
+        pUsrUser = new User(pStrEmail, 6);
 
         if(pUsrUser.Insert(pStoMembership))
         {
             JObject pJOtEmail = new JObject();
             pJOtEmail.Add("From", new JValue(EnvironmentHelpers.GetEnvironmentVariable("FromEmailAddress")));
             pJOtEmail.Add("To", new JValue(pStrEmail));
-            pJOtEmail.Add("Subject", new JValue(EnvironmentHelpers.GetEnvironmentVariable("CreateAccountEmailSubject")));
-            pJOtEmail.Add("Message", new JValue($"Your activation code is {EnvironmentHelpers.GetEnvironmentVariable("AppName")}.")); 
+            pJOtEmail.Add("Subject", new JValue(EnvironmentHelpers.GetEnvironmentVariable("WelcomeEmailSubject")));
+            pJOtEmail.Add("Message", new JValue($"Welcome to {EnvironmentHelpers.GetEnvironmentVariable("AppName")}. Your activation code is {pUsrUser.ActivationCode}.")); 
 
             outputQueueItem = pJOtEmail.ToString();
         }

@@ -2,49 +2,43 @@
 #r "Microsoft.WindowsAzure.Storage"
 #r "Newtonsoft.Json"
 
-using devoctomy.funk.core;
+using devoctomy.funk.core.Cryptography;
 using devoctomy.funk.core.Environment;
 using devoctomy.funk.core.Membership;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Web;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {
-    Dictionary<String, String> pDicParams = GetQueryStrings (req);
+    String pStrActivationCode = req.GetQueryNameValuePairs().FirstOrDefault(q => string.Compare(q.Key, "activationcode", true) == 0).Value;
 
-    String pStrEmail = pDicParams["email"];
-    String pStrActivationCode = pDicParams["activationcode"];
+    System.Security.Claims.ClaimsPrincipal pCPlFacebookUser = System.Security.Claims.ClaimsPrincipal.Current;
+	String pStrEmail = pCPlFacebookUser.FindFirst(System.Security.Claims.ClaimTypes.Email).Value;
+    Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");
+    User pUsrUser = pStoMembership.GetUser(pStrEmail);
 
-    Storage pStoMembership = new Storage(EnvironmentHelpers.GetEnvironmentVariable("StorageRootURL"), "AzureWebJobsStorage");
-    User pUsrUser = await pStoMembership.GetUserAsync(pStrEmail);
-    if(pUsrUser != null)
+    if(pUsrUser == null)
     {
-        if(await pUsrUser.Activate(pStoMembership, pStrActivationCode))
-        {
-            SessionToken pSTnToken = new SessionToken(pStrEmail,
-                new TimeSpan(1,0,0));
-            String pStrJSON = pSTnToken.ToString(Newtonsoft.Json.Formatting.None,
-                true,
-                EnvironmentHelpers.GetEnvironmentVariable("PrivateRSAKey"));
-            HttpResponseMessage pHRMResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            pHRMResponse.Content = new StringContent(pStrJSON);
-            return(pHRMResponse);
-        }
-        else
-        {
-            return(new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized));
-        }
+        return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Unknown user."));
     }
     else
     {
-        return(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+        if(!pUsrUser.Activated)
+        {
+            if(pUsrUser.Activate(pStoMembership, pStrActivationCode))
+            {
+                return(req.CreateResponse(HttpStatusCode.OK, "User successfully activated."));
+            }
+            else
+            {
+                return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Failed to activate user."));
+            }
+        }
+        else
+        {
+            return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "User already activated."));
+        }
     }
-}
-
-public static Dictionary<String, String> GetQueryStrings(HttpRequestMessage iRequest)
-{
-    return(iRequest.GetQueryNameValuePairs().ToDictionary(kv => kv.Key, kv=> kv.Value, StringComparer.OrdinalIgnoreCase));
 }
