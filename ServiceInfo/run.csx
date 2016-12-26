@@ -6,17 +6,15 @@ using devoctomy.funk.core.Cryptography;
 using devoctomy.funk.core.Environment;
 using devoctomy.funk.core.Extensions;
 using devoctomy.funk.core.Membership;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Web;
 
-public static HttpResponseMessage Run(HttpRequestMessage req, TraceWriter log)
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {   
     System.Security.Claims.ClaimsPrincipal pCPlFacebookUser = System.Security.Claims.ClaimsPrincipal.Current;
-	String pStrEmail = pCPlFacebookUser.FindFirst(System.Security.Claims.ClaimTypes.Email).Value;
-    Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");
-    User pUsrUser = pStoMembership.GetUser(pStrEmail);
+    Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");   
+    User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
 
     if(pUsrUser != null)
     {
@@ -29,11 +27,6 @@ public static HttpResponseMessage Run(HttpRequestMessage req, TraceWriter log)
     {
         return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Unknown user."));
     }
-
-    //JObject pJOtCreateUser = new JObject();
-    //pJOtCreateUser.Add("Email", new JValue(pStrEmail));
-    //pStoMembership.QueueMessage(pJOtCreateUser.ToString(), "userspending");
-    //return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Unknown user."));
 
     JObject pJOtInfo = new JObject();
     pJOtInfo.Add("Name", new JValue(EnvironmentHelpers.GetEnvironmentVariable("AppName")));

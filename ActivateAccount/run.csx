@@ -7,17 +7,20 @@ using devoctomy.funk.core.Environment;
 using devoctomy.funk.core.Membership;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
+using System.Security.Claims;
 using System.Net;
 using System.Web;
+using System;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {
     String pStrActivationCode = req.GetQueryNameValuePairs().FirstOrDefault(q => string.Compare(q.Key, "activationcode", true) == 0).Value;
+    String pStrUserName = req.GetQueryNameValuePairs().FirstOrDefault(q => string.Compare(q.Key, "username", true) == 0).Value;
 
-    System.Security.Claims.ClaimsPrincipal pCPlFacebookUser = System.Security.Claims.ClaimsPrincipal.Current;
+    ClaimsPrincipal pCPlFacebookUser = ClaimsPrincipal.Current;
 	String pStrEmail = pCPlFacebookUser.FindFirst(System.Security.Claims.ClaimTypes.Email).Value;
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");
-    User pUsrUser = pStoMembership.GetUser(pStrEmail);
+    User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
 
     if(pUsrUser == null)
     {
@@ -27,7 +30,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     {
         if(!pUsrUser.Activated)
         {
-            if(pUsrUser.Activate(pStoMembership, pStrActivationCode))
+            Boolean pBlnUserNameTaken = false;
+            if(pUsrUser.Activate(pStoMembership, 
+                pStrActivationCode,
+                pStrUserName,
+                out pBlnUserNameTaken))
             {
                 return(req.CreateResponse(HttpStatusCode.OK, "User successfully activated."));
             }

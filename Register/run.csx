@@ -6,14 +6,15 @@ using devoctomy.funk.core.Membership;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Web;
 
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+public static HttpResponseMessage Run(HttpRequestMessage req, TraceWriter log)
 {
-    System.Security.Claims.ClaimsPrincipal pCPlFacebookUser = System.Security.Claims.ClaimsPrincipal.Current;
-	String pStrEmail = pCPlFacebookUser.FindFirst(System.Security.Claims.ClaimTypes.Email).Value;
+    ClaimsPrincipal pCPlFacebookUser = ClaimsPrincipal.Current;
+    string pStrEmail = pCPlFacebookUser.FindFirst(ClaimTypes.Email).Value;
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");
-    User pUsrUser = pStoMembership.GetUser(pStrEmail);
+    User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
 
     if(pUsrUser == null)
     {
