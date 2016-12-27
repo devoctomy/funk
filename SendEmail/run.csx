@@ -8,6 +8,7 @@ using SendGrid.Helpers.Mail;
 
 public static void Run(string myQueueItem, TraceWriter log)
 {
+    log.Info("Parsing queue message.");
     JObject pJOtQueueData = JObject.Parse(myQueueItem);
     String pStrFrom = pJOtQueueData["From"].Value<String>();
     String pStrTo = pJOtQueueData["To"].Value<String>();

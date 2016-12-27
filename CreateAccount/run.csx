@@ -1,6 +1,4 @@
 #r "devoctomy.funk.core.dll"
-#r "Microsoft.WindowsAzure.Storage"
-#r "Newtonsoft.Json"
 
 using devoctomy.funk.core;
 using devoctomy.funk.core.Environment;
@@ -20,29 +18,36 @@ public static void Run(string myQueueItem, out string outputQueueItem, TraceWrit
 {
     outputQueueItem = String.Empty;
 
+    log.Info("Parsing queue message.");
     JObject pJOtQueueData = JObject.Parse(myQueueItem);
     String pStrEmail = pJOtQueueData["Email"].Value<String>();
 
+    log.Info("Initialising membership storage.");
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "CreateAccount");
+
+    log.Info($"Getting registered user associated with '{pStrEmail}'.");
     User pUsrUser = pStoMembership.GetUser(GetTestUserPrincipal(pStrEmail));
 
-    if (pUsrUser == null)
+    if(pUsrUser == null)
     {
+        log.Info("No associated user was found, creating one.");
         pUsrUser = new User(GetTestUserPrincipal(pStrEmail), 6);
 
+        log.Info("Inserting user into table storage.");
         if (pStoMembership.InsertUser(pUsrUser))
         {
+            log.Info("Queuing new user's welcome email.");
+
             JObject pJOtEmail = new JObject();
             pJOtEmail.Add("From", new JValue(EnvironmentHelpers.GetEnvironmentVariable("FromEmailAddress")));
             pJOtEmail.Add("To", new JValue(pStrEmail));
             pJOtEmail.Add("Subject", new JValue(EnvironmentHelpers.GetEnvironmentVariable("WelcomeEmailSubject")));
             pJOtEmail.Add("Message", new JValue($"Welcome to {EnvironmentHelpers.GetEnvironmentVariable("AppName")}. Your activation code is {pUsrUser.ActivationCode}.")); 
-
             outputQueueItem = pJOtEmail.ToString();
         }
         else
         {
-            log.Info("Failed to inserting user...");
+            log.Info("Failed to insert user...");
         }
     }
 }

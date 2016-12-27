@@ -1,6 +1,4 @@
 #r "devoctomy.funk.core.dll"
-#r "Microsoft.WindowsAzure.Storage"
-#r "Newtonsoft.Json"
 
 using devoctomy.funk.core.Membership;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -11,13 +9,21 @@ using System.Web;
 
 public static HttpResponseMessage Run(HttpRequestMessage req, TraceWriter log)
 {
+    log.Info("Getting current authenticated user ClaimPrincipal.");
     ClaimsPrincipal pCPlFacebookUser = ClaimsPrincipal.Current;
-    string pStrEmail = pCPlFacebookUser.FindFirst(ClaimTypes.Email).Value;
+    String pStrEmail = pCPlFacebookUser.FindFirst(ClaimTypes.Email).Value;
+
+    log.Info("Initialising membership storage.");
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");
+
+    log.Info($"Getting registered user associated with '{pStrEmail}'.");
     User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
 
     if(pUsrUser == null)
     {
+        log.Info("No associated user was found.");
+
+        log.Info("Queuing user creation.");
         JObject pJOtCreateUser = new JObject();
         pJOtCreateUser.Add("Email", new JValue(pStrEmail));
         pStoMembership.QueueMessage(pJOtCreateUser.ToString(), "userspending");
@@ -25,6 +31,8 @@ public static HttpResponseMessage Run(HttpRequestMessage req, TraceWriter log)
     }
     else
     {
+        log.Info("Associated user already exists.");
+
         return(req.CreateResponse(HttpStatusCode.Conflict, $"User '{pStrEmail}' already registered."));
     }
 }

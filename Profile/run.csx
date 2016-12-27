@@ -9,6 +9,7 @@ using devoctomy.funk.core.Extensions;
 using devoctomy.funk.core.Membership;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
+using System.Security.Claims;
 using System.Net;
 using System.Web;
 
@@ -16,19 +17,29 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 {
     FunctionResponseBase pFRBResponse = new FunctionResponseBase();
 
-    System.Security.Claims.ClaimsPrincipal pCPlFacebookUser = System.Security.Claims.ClaimsPrincipal.Current;
+    log.Info("Getting current authenticated user ClaimPrincipal.");
+    ClaimsPrincipal pCPlFacebookUser = ClaimsPrincipal.Current;
+    String pStrEmail = pCPlFacebookUser.FindFirst(ClaimTypes.Email).Value;
+
+    log.Info("Initialising membership storage.");
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "Profile");
+
+    log.Info($"Getting registered user associated with '{pStrEmail}'.");
     User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
 
     if(pUsrUser != null)
     {
+        log.Info("Associated user exists, checking existing activation status.");
         if(!pUsrUser.Activated)
         {
+            log.Info("User not activated.");
             return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "User not activated."));
         }
     }
     else
     {
+        log.Info("No associated user was found.");
+
         return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Unknown user."));
     }
 
@@ -36,6 +47,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     {
         case "GET":
         {
+            log.Info("Getting user profile.");
+
             Profile pProProfile = pUsrUser.GetProfile(pStoMembership);
             String pStrRetVal = pFRBResponse.ToJSON(true,
                 HttpStatusCode.OK,
@@ -48,6 +61,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         }
         case "PUT":
         {
+            log.Info("Updating user profile.");
+
             String pStrContent = await req.Content.ReadAsStringAsync();
             Profile pProSource = Profile.FromJSON(pStrContent);
             Profile pProTarget = pUsrUser.GetProfile(pStoMembership);
@@ -61,6 +76,4 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
             return(req.CreateResponse(HttpStatusCode.BadRequest, "Method not supported."));
         }
     }
-
-    return(req.CreateResponse(HttpStatusCode.OK, "OK."));
 }
