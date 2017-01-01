@@ -73,6 +73,14 @@ The following is a list of functionality provided by funk.
 | Output | JSON Object containing information on the service including the public RSA key |
 | Parameters | None |
 
+### UserInfo
+
+| Name | Description |
+|--------|--------|
+| Trigger | HTTP GET |
+| Output | Get status of the authenticated user, such as registration / activation status. |
+| Parameters | None |
+
 ## Deployment Notes
 
 Deployment of funk is relatively simple, instructions will come in due course for deploying from GitHub, until then please refer to the following basic instructions.
