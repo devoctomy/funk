@@ -22,16 +22,6 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     String pStrEmail = await GetAuthenticatedUserEmailAddress(req);
     pJOtResponse.Add("Email", new JValue(pStrEmail));
 
-    String pStrNameIdentifer = String.Empty;
-    if(pBlnAppAuthenticated)
-    {
-        log.Info("Getting NameIdentifier as app authenticated.");
-        if(GetNameIdentifier(out pStrNameIdentifer))
-        {
-            pJOtResponse.Add("NameIdentifier", new JValue(pStrNameIdentifer));
-        }
-    }
-
     log.Info("Initialising membership storage.");
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "UserInfo");   
 
@@ -54,22 +44,6 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     HttpResponseMessage pHRMResponse = new HttpResponseMessage(HttpStatusCode.OK);
     pHRMResponse.Content = new StringContent(pJOtResponse.ToString(Newtonsoft.Json.Formatting.None));
     return(pHRMResponse);
-}
-
-private static Boolean GetNameIdentifier(out String oNameIdentifier)
-{
-    oNameIdentifier = String.Empty;
-    ClaimsPrincipal pCPlCurrentUser = ClaimsPrincipal.Current;
-    if(pCPlCurrentUser != null)
-    {
-        Claim pClmNameIdentifier = pCPlCurrentUser.FindFirst(ClaimTypes.NameIdentifier);
-        if(pClmNameIdentifier != null)
-        {
-            oNameIdentifier = pClmNameIdentifier.Value;
-            return(true);
-        }
-    }
-    return(false);
 }
 
 private static async Task<String> GetAuthenticatedUserEmailAddress(HttpRequestMessage req)

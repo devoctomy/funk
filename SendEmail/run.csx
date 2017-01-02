@@ -1,4 +1,3 @@
-#r "Newtonsoft.Json"
 #r "SendGrid"
 
 using Newtonsoft.Json.Linq;

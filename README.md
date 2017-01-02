@@ -92,4 +92,15 @@ Deployment of funk is relatively simple, instructions will come in due course fo
 5.  Try the "/api/Register" method from your browser, once you have authenticated, an account creation request should be queued and you should get a message saying "Registering new user {email}".  An email should be sent to you with an activation code.
 6.  Activate the account via the "/api/ActivateAccount?activationcode={activationcode}" method.  The activation code should be in the email sent to you in the previous step.
 
+Funk has been designed to work from both the browser, and also an authenticated client app.  There is a Windows 10 Universal Client in this repository with a test application that shows you how to authenticate, register, activate and invoke authenticated functions easily.
+
+The registration process is a little different and has the following basic flow,
+
+1.  Authenticate
+2.  Invoke UserInfo, this will return the authenticated status of the user.
+3.  Invoke Register if 'Registered' in false.
+4.  Invoke Activate if 'Activated' is false, this requires a unique username and also the activation code emailed to the registered users email address.
+
 *That's it for now, I'm currently building up methods for profile, data storage etc.*
+
+> Please note:  Debugging authenticated Azure Functions can be a bit of a pain as the in-browser compiler doesn't always work, I find a combination of disabling the authentication to check for compiler errors and also compiling within the Azure Functions Tools for Visual Studio 2017; helps to flush out issues.

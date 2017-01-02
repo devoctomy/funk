@@ -11,32 +11,6 @@ using System.Web;
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {   
-    log.Info("Getting current authenticated user ClaimPrincipal.");
-    ClaimsPrincipal pCPlFacebookUser = ClaimsPrincipal.Current;
-    String pStrEmail = pCPlFacebookUser.FindFirst(ClaimTypes.Email).Value;
-
-    log.Info("Initialising membership storage.");
-    Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "ServiceInfo");   
-
-    log.Info($"Getting registered user associated with '{pStrEmail}'.");
-    User pUsrUser = pStoMembership.GetUser(pCPlFacebookUser);
-
-    if(pUsrUser != null)
-    {
-        log.Info("Associated user exists, checking existing activation status.");
-        if(!pUsrUser.Activated)
-        {
-            log.Info("User not activated.");
-            return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "User not activated."));
-        }
-    }
-    else
-    {
-        log.Info("No associated user was found.");
-
-        return(req.CreateResponse(HttpStatusCode.MethodNotAllowed, "Unknown user."));
-    }
-
     log.Info("Returning service information.");
     JObject pJOtInfo = new JObject();
     pJOtInfo.Add("Name", new JValue(EnvironmentHelpers.GetEnvironmentVariable("AppName")));

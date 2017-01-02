@@ -26,12 +26,13 @@ public static void Run(string myQueueItem, out string outputQueueItem, TraceWrit
     Storage pStoMembership = new Storage("TableStorageRootURL", "AzureWebJobsStorage", "CreateAccount");
 
     log.Info($"Getting registered user associated with '{pStrEmail}'.");
-    User pUsrUser = pStoMembership.GetUser(GetTestUserPrincipal(pStrEmail));
+    ClaimsPrincipal pCPlUser = CreateUserPrincipal(pStrEmail);
+    User pUsrUser = pStoMembership.GetUser(pCPlUser);
 
     if(pUsrUser == null)
     {
         log.Info("No associated user was found, creating one.");
-        pUsrUser = new User(GetTestUserPrincipal(pStrEmail), 6);
+        pUsrUser = new User(pCPlUser, 6);
 
         log.Info("Inserting user into table storage.");
         if (pStoMembership.InsertUser(pUsrUser))
@@ -53,7 +54,7 @@ public static void Run(string myQueueItem, out string outputQueueItem, TraceWrit
 }
 
 
-private static ClaimsPrincipal GetTestUserPrincipal(String iEmail)
+private static ClaimsPrincipal CreateUserPrincipal(String iEmail)
 {
     GenericIdentity pGIyTestUser = new GenericIdentity("John Doe");
     pGIyTestUser.AddClaim(new Claim(ClaimTypes.Email, iEmail));
